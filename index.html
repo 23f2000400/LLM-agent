@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GyaanSetu - Advanced AI Assistant with Multi-Tool Capabilities, Voice Interface, and Real-time Collaboration">
+    <meta name="keywords" content="AI assistant, chat interface, web search, code execution, voice assistant">
+    <meta name="author" content="Gaurav Tomar">
+
+    <!-- PWA Support -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AgentFlow Pro">
+
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Modern fonts and icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Code highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <title>GyaanSetu - Advanced AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered: ', registration))
+                    .catch(registrationError => console.log('SW registration failed: ', registrationError));
+            });
+        }
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-brain fa-3x"></i>
+            </div>
+            <h2>GyaanSetu</h2>
+            <p>Initializing Advanced AI Assistant...</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <i class="fas fa-brain"></i>
+                <span class="brand-text">GyaanSetu</span>
+                <span class="version-badge">v2.0</span>
+            </div>
+
+            <div class="nav-controls">
+                <button id="voice-toggle" class="nav-btn" title="Voice Input" aria-label="Voice Input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="theme-toggle" class="nav-btn" title="Toggle Theme" aria-label="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="fullscreen-toggle" class="nav-btn" title="Fullscreen" aria-label="Fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button id="settings-toggle" class="nav-btn" title="Settings" aria-label="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>Conversations</h3>
+                <button id="new-chat" class="btn-new-chat">
+                    <i class="fas fa-plus"></i> New Chat
+                </button>
+            </div>
+
+            <div class="conversation-list" id="conversation-list">
+                <!-- Conversation items will be populated here -->
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="usage-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Messages</span>
+                        <span class="stat-value" id="total-messages">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Conversations</span>
+                        <span class="stat-value" id="total-conversations">0</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="chat-info">
+                    <h1 id="chat-title">Welcome to GyaanSetu</h1>
+                    <p id="chat-description">Your advanced AI assistant with multi-tool capabilities</p>
+                </div>
+
+                <div class="chat-actions">
+                    <button id="export-chat" class="action-btn" title="Export Chat" aria-label="Export Chat">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button id="share-chat" class="action-btn" title="Share Chat" aria-label="Share Chat">
+                        <i class="fas fa-share"></i>
+                    </button>
+                    <button id="clear-chat" class="action-btn" title="Clear Chat" aria-label="Clear Chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messages-container">
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <i class="fas fa-robot fa-4x"></i>
+                        </div>
+                        <h2>Welcome to GyaanSetu</h2>
+                        <p>Your intelligent AI assistant with advanced multi-tool capabilities</p>
+
+                        <div class="capability-grid">
+                            <div class="capability-card">
+                                <i class="fas fa-search"></i>
+                                <h3>Smart Search</h3>
+                                <p>Real-time web search with intelligent results</p>
+                            </div>
+                            <div class="capability-card">
+                                <i class="fas fa-code"></i>
+                                <h3>Code Execution</h3>
+                                <p>Safe JavaScript execution with visualization</p>
+                            </div>
+                            <div class="capability-card">
+                                <i class="fas fa-brain"></i>
+                                <h3>AI Workflows</h3>
+                                <p>Advanced data processing and analysis</p>
+                            </div>
+                            <div class="capability-card">
+                                <i class="fas fa-microphone"></i>
+                                <h3>Voice Interface</h3>
+                                <p>Hands-free interaction with voice commands</p>
+                            </div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="quick-action" data-prompt="Help me research the latest AI developments">
+                                <i class="fas fa-flask"></i>
+                                Research AI Trends
+                            </button>
+                            <button class="quick-action" data-prompt="Create a data visualization showing sample sales data">
+                                <i class="fas fa-chart-bar"></i>
+                                Create Visualization
+                            </button>
+                            <button class="quick-action" data-prompt="Help me write and test a JavaScript function">
+                                <i class="fas fa-code"></i>
+                                Code Assistant
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages" id="messages">
+                    <!-- Messages will be populated here -->
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="file-drop-zone" id="file-drop-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop files here to analyze</p>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <button id="attach-file" class="input-btn" title="Attach File" aria-label="Attach File">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+
+                        <textarea 
+                            id="user-input" 
+                            placeholder="Type your message here... Press Enter to send, Shift+Enter for new line"
+                            rows="1"
+                            maxlength="5000"
+                        ></textarea>
+
+                        <div class="input-actions">
+                            <button id="voice-input" class="input-btn voice-btn" title="Voice Input" aria-label="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="send-message" class="send-btn" title="Send Message" aria-label="Send Message">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="input-footer">
+                        <div class="character-count">
+                            <span id="char-count">0</span>/5000
+                        </div>
+
+                        <div class="typing-indicator" id="typing-indicator">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="typing-text">AI is thinking...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" id="close-settings" aria-label="Close Settings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="api">API Configuration</button>
+                    <button class="tab-btn" data-tab="ui">Interface</button>
+                    <button class="tab-btn" data-tab="voice">Voice</button>
+                    <button class="tab-btn" data-tab="advanced">Advanced</button>
+                </div>
+
+                <!-- API Configuration Tab -->
+                <div class="tab-content active" id="api-tab">
+                    <div class="form-group">
+                        <label for="llm-provider">LLM Provider</label>
+                        <select id="llm-provider" class="form-control">
+                            <!-- AI Pipe as first option (added for proxy support) -->
+                            <option value="aipipe">AI Pipe (aipipe.org)</option>
+                            <option value="openai">OpenAI GPT</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                            <option value="google">Google Gemini</option>
+                            <option value="local">Local Model</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="api-key">API Key / Token</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="api-key" class="form-control" placeholder="Enter your API key or AI Pipe token">
+                            <button class="toggle-visibility" type="button" aria-label="Toggle API key visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="model-name">Model</label>
+                        <select id="model-name" class="form-control">
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max-tokens">Max Tokens</label>
+                        <input type="number" id="max-tokens" class="form-control" value="2000" min="100" max="8000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temperature">Temperature</label>
+                        <input type="range" id="temperature" class="form-range" min="0" max="2" step="0.1" value="0.7">
+                        <span class="range-value">0.7</span>
+                    </div>
+                </div>
+
+                <!-- Interface Tab -->
+                <div class="tab-content" id="ui-tab">
+                    <div class="form-group">
+                        <label>Theme</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="theme" value="auto" checked>
+                                <span>Auto (System)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="theme" value="light">
+                                <span>Light</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="theme" value="dark">
+                                <span>Dark</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="animations-enabled" checked>
+                            <span>Enable Animations</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sound-enabled">
+                            <span>Sound Effects</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="font-size">Font Size</label>
+                        <select id="font-size" class="form-control">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Voice Tab -->
+                <div class="tab-content" id="voice-tab">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="voice-enabled">
+                            <span>Enable Voice Input</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="voice-output-enabled">
+                            <span>Enable Voice Output</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voice-language">Language</label>
+                        <select id="voice-language" class="form-control">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="speech-rate">Speech Rate</label>
+                        <input type="range" id="speech-rate" class="form-range" min="0.5" max="2" step="0.1" value="1">
+                        <span class="range-value">1x</span>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div class="tab-content" id="advanced-tab">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="auto-save" checked>
+                            <span>Auto-save Conversations</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="analytics-enabled">
+                            <span>Enable Analytics</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max-history">Max Conversation History</label>
+                        <input type="number" id="max-history" class="form-control" value="100" min="10" max="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <button id="clear-all-data" class="btn btn-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="export-settings" class="btn btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Export Settings
+                </button>
+                <button id="import-settings" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i>
+                    Import Settings
+                </button>
+                <button id="save-settings" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Monitor -->
+    <div id="performance-monitor" class="performance-monitor">
+        <div class="perf-header">
+            <h4>Performance</h4>
+            <button id="toggle-perf" class="perf-toggle" aria-label="Toggle Performance">
+                <i class="fas fa-chart-line"></i>
+            </button>
+        </div>
+        <div class="perf-metrics">
+            <div class="metric">
+                <span class="metric-label">Response Time</span>
+                <span class="metric-value" id="response-time">0ms</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Memory Usage</span>
+                <span class="metric-value" id="memory-usage">0MB</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">API Calls</span>
+                <span class="metric-value" id="api-calls">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container">
+        <!-- Toast messages will be added here -->
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+        <div class="context-item" data-action="copy">
+            <i class="fas fa-copy"></i> Copy
+        </div>
+        <div class="context-item" data-action="edit">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="context-item" data-action="delete">
+            <i class="fas fa-trash"></i> Delete
+        </div>
+        <div class="context-item" data-action="bookmark">
+            <i class="fas fa-bookmark"></i> Bookmark
+        </div>
+    </div>
+
+    <!-- File Input -->
+    <input type="file" id="file-input" multiple accept=".txt,.json,.csv,.md,.js,.py,.html,.css" style="display: none;">
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="agent.js"></script>
+    <script>
+      // small boot-time initialization fixups
+      document.addEventListener('DOMContentLoaded', () => {
+        // initialize highlight if present
+        if (window.hljs && typeof hljs.highlightAll === 'function') hljs.highlightAll();
+      });
+    </script>
+</body>
+</html>
