@@ -1,6 +1,7 @@
 
 # 🌐 LLM Agent [GyaanSetu](https://tds-bonus-project-llm-agent.vercel.app/) — Browser-Based Multi-Tool Reasoning
-
+Purpose
+The main goal of this project is to simplify the process of sending requests and receiving responses from different LLM APIs. Instead of writing separate code for each provider (like OpenAI, Groq, Mistral, etc.), you can use this agent as a single, flexible client.
 This project is a **proof-of-concept (POC)** for building a **browser-based LLM agent** that can combine **natural language reasoning** with **external tools** like search engines, pipelined APIs, and even **live JavaScript execution**.  
 
 Modern LLM agents aren’t limited to text — they dynamically integrate multiple tools and loop until tasks are solved. This app demonstrates that idea with a **minimal, hackable UI + JavaScript agent core**.
@@ -74,7 +75,7 @@ This POC reimplements the above loop in **browser JavaScript**, connected to pro
 1. Clone this repo:
 
    ```bash
-   git clone https://github.com/23f1000805/tds-bonus-project-LLM-Agent.git
+   git clone https://github.com/23f2000400/LLM-agent.git
    cd tds-bonus-project-LLM-Agent
    ```
 
